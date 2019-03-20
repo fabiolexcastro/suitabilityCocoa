@@ -69,6 +69,19 @@ fnl <- inner_join(st_as_sf(adm) %>% dplyr::select(ID_ESPACIA), fnl, by = c('ID_E
 fnl <- fnl %>% mutate(prc = round(prc, 2))
 st_write(obj = fnl, dsn = '../_data/_shp', layer = 'stb_prc', driver = 'ESRI Shapefile', update = TRUE)
 
+alta <- filter(fnl, ctg == 'Alta')
+admsf <- st_as_sf(adm)
+tst <- full_join(admsf, alta %>% as.data.frame %>% dplyr::select(ID_ESPACIA, prc), by = c('ID_ESPACIA' = 'ID_ESPACIA'))
+tmp <- tst %>% mutate(prc_2 = ifelse(is.na(prc), 0, prc))
+tmp <- tmp %>% dplyr::select(-prc)
+st_write(obj = tmp, dsn = '../_data/_shp', layer = 'final_shape', driver = 'ESRI Shapefile', update = TRUE)
+
+
+
+fnl %>% filter(ctg == 'Alta')
+fnl <- fnl %>% mutate(ctg = as.character(ctg))
+st_write(obj = fnl, dsn = '../_data/_shp', layer = 'stb_prc_alta', driver = 'ESRI Shapefile', update = TRUE)
+
 # Reviewing the duplicated files
 adm_df <- adm %>% as_data_frame() %>% dplyr::select(ID_ESPACIA, NOM_MUNICI, NOMBRE_DPT) %>% mutate(NOMBRE_DPT = iconv(NOMBRE_DPT, 'UTF-8', 'latin1'), NOM_MUNICI = iconv(NOM_MUNICI, 'UTF-8', 'latin1'))
 adm_dp <- adm_df[duplicated(adm_df$ID_ESPACIA),]
